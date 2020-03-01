@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
@@ -62,12 +63,13 @@ public class DemaskingMojo extends AbstractMojo {
 
         if (yamlFilePath != null && !yamlFilePath.isEmpty()) {
             // При необходимости замена символа разделителя директорий в yamlFilePath
-            getLog().info("replace delimeter in yaml path");
-            getLog().info("yaml path before replace separetor: " + yamlFilePath);
+            getLog().info("replace delimiter in yaml path");
+            getLog().info("yaml path before replace separator: " + yamlFilePath);
             yamlFilePath = yamlFilePath.replaceAll("[\\\\/]", Matcher.quoteReplacement(File.separator));
             getLog().info("yaml path after replace separator: " + yamlFilePath);
             getMaskedFiles();
-            templateFilePaths = templateFilePaths.stream().map(path -> path.replaceAll("[\\\\/]", Matcher.quoteReplacement(File.separator))).collect(Collectors.toList());
+            templateFilePaths = templateFilePaths.stream().map(path -> path.replaceAll("[\\\\/]",
+                    Matcher.quoteReplacement(File.separator))).collect(Collectors.toList());
             try {
                 // Load the parameters
                 YamlReader yamlReader = new YamlReader(yamlFilePath);
@@ -129,7 +131,7 @@ public class DemaskingMojo extends AbstractMojo {
             List<File> files = new ArrayList<>();
             getLog().info("Base directory: " + baseDirectory);
             if (templateFileDirs != null && !templateFileDirs.isEmpty()) {
-                getLog().info("Custom directories: " + templateFileDirs.stream().collect(Collectors.joining("; ")));
+                getLog().info("Custom directories: " + String.join("; ", templateFileDirs));
                 templateFileDirs.forEach((directory) -> getAllFilesFromDirectory(directory, files));
             } else {
                 getAllFilesFromDirectory(baseDirectory, files);
@@ -147,27 +149,21 @@ public class DemaskingMojo extends AbstractMojo {
 
     private Boolean isDemasking(File file, String demaskingRegexp) {
         boolean result = false;
-        Scanner in = null;
-        try {
-            in = new Scanner(file);
+        try (Scanner in = new Scanner(file)) {
             while (in.hasNextLine() && !result) {
                 result = in.nextLine().matches(demaskingRegexp);
             }
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            try {
-                if (in != null) {
-                    in.close();
-                }
-            } catch (Exception e) { /* ignore */ }
         }
+        /* ignore */
         return result;
     }
 
     private void getAllFilesFromDirectory(String directory, List<File> fileList) {
         if (directory != null && (!directory.isEmpty())) {
-            Stream.of(new File(directory).listFiles()).filter(file -> !excludeDirs.contains(file.getName())).forEach(file -> {
+            Stream.of(Objects.requireNonNull(new File(directory).listFiles()))
+                    .filter(file -> !excludeDirs.contains(file.getName())).forEach(file -> {
                 if (file.isDirectory()) {
                     getAllFilesFromDirectory(file.getAbsolutePath(), fileList);
                 } else {

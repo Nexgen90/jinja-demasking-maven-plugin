@@ -24,7 +24,6 @@ public class YamlReader {
     private Path filesPath;
 
     private YamlReader() {
-
     }
 
     public YamlReader(String mainYamlPath) {
