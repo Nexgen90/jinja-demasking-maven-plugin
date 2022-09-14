@@ -1,5 +1,5 @@
 #jinja-demasking-maven-plugin
-If you use [ansible](https://docs.ansible.com) closely ties with java, you can see in your project files something like with:
+If you use [ansible](https://docs.ansible.com) closely ties with java, you can see in your project files something like this:
 ```
 logging.file.max-size={{demo.logging.file.size}}
 logging.file.max-history={{demo.logging.file.history}}
